@@ -38,7 +38,15 @@ app.all("*", async (req, res) => {
 
   try {
     const response = await fetch(url, options);
-    const data = await response.text();
+    
+    // Verificar el tipo de contenido de la respuesta
+    let data;
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
 
     // Responder con los encabezados CORS adecuados
     res.set({
@@ -49,6 +57,7 @@ app.all("*", async (req, res) => {
 
     res.status(response.status).send(data);
   } catch (error) {
+    console.error("Error en el proxy:", error);
     res.status(500).json({ error: "Error en el proxy", details: error.message });
   }
 });
